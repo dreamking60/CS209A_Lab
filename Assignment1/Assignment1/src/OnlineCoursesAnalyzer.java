@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 public class OnlineCoursesAnalyzer {
     private Stream<Course> courseStream;
     public OnlineCoursesAnalyzer(String datasetPath) throws IOException {
+        // TODO: Read file and generate stream of course
         courseStream = Files.lines(Paths.get(datasetPath))
                 .map(l -> l.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
                 .map(data -> new Course(data[0], data[1], data[2], data[3],
