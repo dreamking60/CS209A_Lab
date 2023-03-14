@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -12,7 +12,7 @@ public class OnlineCoursesAnalyzer {
         // TODO: Read file and generate stream of course
         courseStream = Files.lines(Paths.get(datasetPath))
                 .map(l -> l.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
-                .map(data -> new Course(data[0], data[1], data[2], data[3],
+                .map(data -> new Course(data[0], data[1], new Date(data[2]), data[3],
                                         data[4], data[5], Integer.parseInt(data[6]),
                                         Integer.parseInt(data[7]), Integer.parseInt(data[8]),
                                         Integer.parseInt(data[9]), Integer.parseInt(data[10]),
@@ -22,7 +22,7 @@ public class OnlineCoursesAnalyzer {
                                         Double.parseDouble(data[16]), Double.parseDouble(data[17]),
                                         Double.parseDouble(data[18]), Double.parseDouble(data[19]),
                                         Double.parseDouble(data[20]), Double.parseDouble(data[21]),
-                                        Double.parseDouble(data[28])));
+                                        Double.parseDouble(data[22])));
     }
 
     public Map<String, Integer> getPtcpCountByInst() {

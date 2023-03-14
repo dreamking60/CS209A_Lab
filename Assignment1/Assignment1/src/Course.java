@@ -1,7 +1,12 @@
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.stream.Stream;
+
 public class Course {
     private String institution;
     private String courseNumber;
-    private String launchDate;
+    private Date launchDate;
     private String courseTitle;
     private String instructors;
     private String courseSubjects;
@@ -23,7 +28,7 @@ public class Course {
     private double percentFemale;
     private double percentBachelorDegreeOrHigher;
 
-    public Course(String institution, String courseNumber, String launchDate, String courseTitle, String instructors, String courseSubjects, int year, int honorCodeCertificates, int participants, int audited, int certified, double percentAudited, double percentCertified, double percentCertifiedOfAudited, double percentPlayedVideo, double percentPostedInForum, double percentGradeHigherThanZero, double perThousandTotalCourseHours, double medianHoursForCertification, double medianAge, double percentMale, double percentFemale, double percentBachelorDegreeOrHigher) {
+    public Course(String institution, String courseNumber, Date launchDate, String courseTitle, String instructors, String courseSubjects, int year, int honorCodeCertificates, int participants, int audited, int certified, double percentAudited, double percentCertified, double percentCertifiedOfAudited, double percentPlayedVideo, double percentPostedInForum, double percentGradeHigherThanZero, double perThousandTotalCourseHours, double medianHoursForCertification, double medianAge, double percentMale, double percentFemale, double percentBachelorDegreeOrHigher) {
         this.institution = institution;
         this.courseNumber = courseNumber;
         this.launchDate = launchDate;
@@ -49,6 +54,24 @@ public class Course {
         this.percentBachelorDegreeOrHigher = percentBachelorDegreeOrHigher;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" +
+                Arrays.stream(getClass().getDeclaredFields())
+                        .map(field -> {
+                            try{
+                                field.setAccessible(true);
+                                return field.getName() + "=" + field.get(this);
+                            } catch (IllegalAccessException e) {
+                                return "";
+                            }
+                        })
+                        .filter(s -> !s.isEmpty())
+                        .reduce((s1,s2) -> s1+", "+s2)
+                        .orElse("") +
+                "}";
+    }
+
     public String getInstitution() {
         return institution;
     }
@@ -57,7 +80,7 @@ public class Course {
         return courseNumber;
     }
 
-    public String getLaunchDate() {
+    public Date getLaunchDate() {
         return launchDate;
     }
 
