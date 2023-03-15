@@ -1,6 +1,7 @@
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class Course {
@@ -8,7 +9,7 @@ public class Course {
     private String courseNumber;
     private Date launchDate;
     private String courseTitle;
-    private String instructors;
+    private List<String> instructors;
     private String courseSubjects;
     private int year;
     private int honorCodeCertificates;
@@ -37,7 +38,7 @@ public class Course {
         this.courseTitle = courseTitle;
         if (instructors.startsWith("\"")) instructors = instructors.substring(1);
         if (instructors.endsWith("\"")) instructors = instructors.substring(0, instructors.length() - 1);
-        this.instructors = instructors;
+        this.instructors = Arrays.stream(instructors.split(",")).map(String::trim).toList();
         if (courseSubjects.startsWith("\"")) courseSubjects = courseSubjects.substring(1);
         if (courseSubjects.endsWith("\"")) courseSubjects = courseSubjects.substring(0, courseSubjects.length() - 1);
         this.courseSubjects = courseSubjects;
@@ -94,7 +95,7 @@ public class Course {
         return courseTitle;
     }
 
-    public String getInstructors() {
+    public List<String> getInstructors() {
         return instructors;
     }
 

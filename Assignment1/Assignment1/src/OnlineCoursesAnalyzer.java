@@ -1,11 +1,8 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.CollationElementIterator;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class OnlineCoursesAnalyzer {
     private List<Course> couseList;
@@ -33,7 +30,7 @@ public class OnlineCoursesAnalyzer {
         return res.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldV, newV) -> oldV, LinkedHashMap::new));
     }
 
-    public Map<String, Integer> getPtCountByInstAndSubject() {
+    public Map<String, Integer> getPtcpCountByInstAndSubject() {
         // TODO: Participants count by Institution and Course Subject
         Map<String, Integer> res = couseList.stream().collect(Collectors.groupingBy(c -> c.getInstitution()+"-"+c.getCourseSubjects(), Collectors.summingInt(Course::getParticipants)));
         return res.entrySet().stream()
@@ -44,8 +41,37 @@ public class OnlineCoursesAnalyzer {
 
     public Map<String, List<List<String>>> getCourseListOfInstructor() {
         // TODO: Course list by Instructor
+        Map<String, List<List<String>>> res = new HashMap<>();
+        couseList.stream().sorted(Comparator.comparing(Course::getCourseTitle)).forEach(course -> {
+            List<String> instructors = course.getInstructors().stream().toList();
+            checkInstructor(res, instructors);
+            if(instructors.size() == 1) {
+                if(!res.get(instructors.get(0)).get(0).contains(course.getCourseTitle())) {
+                    res.get(instructors.get(0)).get(0).add(course.getCourseTitle());
+                }
+            } else {
+                instructors.stream().forEach(instructor -> {
+                    if(!res.get(instructor).get(1).contains(course.getCourseTitle())) {
+                        res.get(instructor).get(1).add(course.getCourseTitle());
+                    }
+                });
+            }
+        });
+        return res;
+    }
 
-        return null;
+    public void checkInstructor(Map<String, List<List<String>>> res, List<String> instructors) {
+        for(String instructor: instructors) {
+            if(!res.containsKey(instructor)) {
+                List<String> inCourse = new ArrayList<>();
+                List<String> coCourse = new ArrayList<>();
+                List<List<String>> instructorCourseList = new ArrayList<>();
+                instructorCourseList.add(inCourse);
+                instructorCourseList.add(coCourse);
+                res.put(instructor, instructorCourseList);
+            }
+        }
+
     }
 
     public List<String> getCourses(int topK, String by) {
