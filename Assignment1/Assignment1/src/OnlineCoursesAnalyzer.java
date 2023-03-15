@@ -1,14 +1,15 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.cert.CertPath;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class OnlineCoursesAnalyzer {
-    private List<Course> couseList;
+    private List<Course> courseList;
     public OnlineCoursesAnalyzer(String datasetPath) throws IOException {
         // TODO: Read file and generate stream of course
-        couseList = Files.lines(Paths.get(datasetPath))
+        courseList = Files.lines(Paths.get(datasetPath))
                 .skip(1)
                 .map(l -> l.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
                 .map(data -> new Course(data[0], data[1], new Date(data[2]), data[3],
@@ -26,13 +27,13 @@ public class OnlineCoursesAnalyzer {
 
     public Map<String, Integer> getPtcpCountByInst() {
         // TODO: Participants count by Institution
-        Map<String, Integer> res = couseList.stream().collect(Collectors.groupingBy(Course::getInstitution, Collectors.summingInt(Course::getParticipants)));
+        Map<String, Integer> res = courseList.stream().collect(Collectors.groupingBy(Course::getInstitution, Collectors.summingInt(Course::getParticipants)));
         return res.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldV, newV) -> oldV, LinkedHashMap::new));
     }
 
     public Map<String, Integer> getPtcpCountByInstAndSubject() {
         // TODO: Participants count by Institution and Course Subject
-        Map<String, Integer> res = couseList.stream().collect(Collectors.groupingBy(c -> c.getInstitution()+"-"+c.getCourseSubjects(), Collectors.summingInt(Course::getParticipants)));
+        Map<String, Integer> res = courseList.stream().collect(Collectors.groupingBy(c -> c.getInstitution()+"-"+c.getCourseSubjects(), Collectors.summingInt(Course::getParticipants)));
         return res.entrySet().stream()
                 .sorted(Map.Entry.<String,Integer>comparingByValue().reversed()
                         .thenComparing(Map.Entry.comparingByKey()))
@@ -42,7 +43,7 @@ public class OnlineCoursesAnalyzer {
     public Map<String, List<List<String>>> getCourseListOfInstructor() {
         // TODO: Course list by Instructor
         Map<String, List<List<String>>> res = new HashMap<>();
-        couseList.stream().sorted(Comparator.comparing(Course::getCourseTitle)).forEach(course -> {
+        courseList.stream().sorted(Comparator.comparing(Course::getCourseTitle)).forEach(course -> {
             List<String> instructors = course.getInstructors().stream().toList();
             checkInstructor(res, instructors);
             if(instructors.size() == 1) {
@@ -76,14 +77,30 @@ public class OnlineCoursesAnalyzer {
 
     public List<String> getCourses(int topK, String by) {
         // TODO: Top courses
-
-        return null;
+        if(by.equals("hours")) {
+            return courseList.stream()
+                    .sorted(Comparator.comparing(Course::getPerThousandTotalCourseHours).reversed().thenComparing(Course::getCourseTitle))
+                    .map(Course::getCourseTitle).distinct().limit(topK).toList();
+        } else if(by.equals("participants")) {
+            return courseList.stream()
+                    .sorted(Comparator.comparing(Course::getParticipants).reversed().thenComparing(Course::getCourseTitle))
+                    .map(Course::getCourseTitle).distinct().limit(topK).toList();
+        } else {
+            System.out.println("Not a valid by parameter.");
+            return new ArrayList<>();
+        }
     }
 
     public List<String> searchCourses(String courseSubject, double percentAudited, double totalCourseHours) {
         // TODO: Search courses
-
-        return null;
+        return courseList.stream()
+                .filter(course -> course.getCourseSubjects().toUpperCase().contains(courseSubject.toUpperCase()))
+                .filter(course -> course.getPercentAudited() >= percentAudited)
+                .filter(course -> course.getPerThousandTotalCourseHours() <= totalCourseHours)
+                .map(Course::getCourseTitle)
+                .distinct()
+                .sorted()
+                .toList();
     }
 
     public List<String> recommendCourses(int age, int gender, int isBachelorOrHigher) {

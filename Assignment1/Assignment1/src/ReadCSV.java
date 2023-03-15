@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,7 +43,7 @@ public class ReadCSV {
                         Double.parseDouble(data[20]), Double.parseDouble(data[21]),
                         Double.parseDouble(data[22])));
 
-//        List<Course> couseList = courseStream.toList();
+        List<Course> couseList = courseStream.toList();
 //        couseList.stream().forEach(Course -> {
 //            System.out.println("Course Subject: " + Course.getCourseSubjects());
 //        });
@@ -74,22 +75,27 @@ public class ReadCSV {
 //        });
 
         // Q2 Test
-//        oa.getPtCountByInstAndSubject().forEach((s,i)->{
+//        oa.getPtcpCountByInstAndSubject().forEach((s,i)->{
 //            System.out.printf("%s: %d\n", s, i);
 //        });
 
         //Q3
-        oa.getCourseListOfInstructor().forEach((s,ss) -> {
-            System.out.println(s+": "+ss);
-        });
-        LinkedList<String> testString = new LinkedList<>();
-        String a = "Hello";
-        String b = "Hello";
-        String c = "World";
-        testString.add(a);
-        testString.add(b);
-        testString.add(c);
-        System.out.println(testString);
+//        oa.getCourseListOfInstructor().forEach((s,ss) -> {
+//            System.out.println(s+": "+ss);
+//        });
+//        LinkedList<String> testString = new LinkedList<>();
+//        String a = "Hello";
+//        String b = "Hello";
+//        String c = "World";
+//        testString.add(a);
+//        testString.add(b);
+//        testString.add(c);
+//        System.out.println(testString);
+
+        //Q4
+//        couseList.stream()
+//                .sorted(Comparator.comparing(Course::getPerThousandTotalCourseHours).reversed().thenComparing(Course::getCourseTitle))
+//                .collect(Collectors.toList());
 
     }
 }
