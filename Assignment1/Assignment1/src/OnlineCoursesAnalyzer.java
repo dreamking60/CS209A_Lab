@@ -1,16 +1,18 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.text.CollationElementIterator;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OnlineCoursesAnalyzer {
-    private Stream<Course> courseStream;
+    private List<Course> couseList;
     public OnlineCoursesAnalyzer(String datasetPath) throws IOException {
         // TODO: Read file and generate stream of course
-        courseStream = Files.lines(Paths.get(datasetPath))
+        couseList = Files.lines(Paths.get(datasetPath))
+                .skip(1)
                 .map(l -> l.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
                 .map(data -> new Course(data[0], data[1], new Date(data[2]), data[3],
                                         data[4], data[5], Integer.parseInt(data[6]),
@@ -22,22 +24,25 @@ public class OnlineCoursesAnalyzer {
                                         Double.parseDouble(data[16]), Double.parseDouble(data[17]),
                                         Double.parseDouble(data[18]), Double.parseDouble(data[19]),
                                         Double.parseDouble(data[20]), Double.parseDouble(data[21]),
-                                        Double.parseDouble(data[22])));
+                                        Double.parseDouble(data[22]))).toList();
     }
 
     public Map<String, Integer> getPtcpCountByInst() {
         // TODO: Participants count by Institution
-
-        return null;
+        Map<String, Integer> res = couseList.stream().collect(Collectors.groupingBy(Course::getInstitution, Collectors.summingInt(Course::getParticipants)));
+        return res.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldV, newV) -> oldV, LinkedHashMap::new));
     }
 
     public Map<String, Integer> getPtCountByInstAndSubject() {
         // TODO: Participants count by Institution and Course Subject
-
-        return null;
+        Map<String, Integer> res = couseList.stream().collect(Collectors.groupingBy(c -> c.getInstitution()+"-"+c.getCourseSubjects(), Collectors.summingInt(Course::getParticipants)));
+        return res.entrySet().stream()
+                .sorted(Map.Entry.<String,Integer>comparingByValue().reversed()
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldV, newV)->newV, LinkedHashMap::new));
     }
 
-    public Map<String, Integer> getCourseListOfInstructor() {
+    public Map<String, List<List<String>>> getCourseListOfInstructor() {
         // TODO: Course list by Instructor
 
         return null;
@@ -61,8 +66,5 @@ public class OnlineCoursesAnalyzer {
         return null;
     }
 
-    public static void main(String[] args) {
-
-    }
 
 }

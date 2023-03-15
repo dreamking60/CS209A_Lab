@@ -32,8 +32,14 @@ public class Course {
         this.institution = institution;
         this.courseNumber = courseNumber;
         this.launchDate = launchDate;
+        if(courseTitle.startsWith("\"")) courseTitle = courseTitle.substring(1);
+        if(courseTitle.endsWith("\"")) courseTitle = courseTitle.substring(0, courseTitle.length()-1);
         this.courseTitle = courseTitle;
+        if (instructors.startsWith("\"")) instructors = instructors.substring(1);
+        if (instructors.endsWith("\"")) instructors = instructors.substring(0, instructors.length() - 1);
         this.instructors = instructors;
+        if (courseSubjects.startsWith("\"")) courseSubjects = courseSubjects.substring(1);
+        if (courseSubjects.endsWith("\"")) courseSubjects = courseSubjects.substring(0, courseSubjects.length() - 1);
         this.courseSubjects = courseSubjects;
         this.year = year;
         this.honorCodeCertificates = honorCodeCertificates;
