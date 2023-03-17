@@ -107,23 +107,32 @@ public class OnlineCoursesAnalyzer {
 
     public List<String> recommendCourses(int age, int gender, int isBachelorOrHigher) {
         // TODO: Recommend courses
-        Map<String, List<Course>> courses = courseList.stream().collect(Collectors.groupingBy(Course::getCourseNumber));
+        Map<String, Double> courseValue = courseList.stream()
+                .collect(Collectors.groupingBy(Course::getCourseNumber,
+                        Collectors.collectingAndThen(Collectors.toList(), courses -> {
+                            double avgAge = courses.stream().collect(Collectors.averagingDouble(Course::getMedianAge));
+                            double avgGender = courses.stream().collect(Collectors.averagingDouble(Course::getPercentMale));
+                            double avgBoH = courses.stream().collect(Collectors.averagingDouble(Course::getPercentBachelorDegreeOrHigher));
+                            return Math.pow(age-avgAge,2) + Math.pow(gender*100-avgGender,2) + Math.pow(isBachelorOrHigher*100-avgBoH,2);
+                        })));
 
-        Map<String, Double> courseValue = new HashMap<>();
-        for(Map.Entry<String, List<Course>> e: courses.entrySet()) {
-            double avgAge = 0, avgGender = 0, avgIsBOrH = 0, value;
-            List<Course> cList = e.getValue();
-            for(Course course: cList) {
-                avgAge += course.getMedianAge();
-                avgGender += course.getPercentMale();
-                avgIsBOrH += course.getPercentBachelorDegreeOrHigher();
-            }
-            avgAge = avgAge/cList.size();
-            avgGender = avgGender/cList.size();
-            avgIsBOrH = avgIsBOrH/cList.size();
-            value = Math.pow(age-avgAge,2) + Math.pow(gender*100-avgGender,2) + Math.pow(isBachelorOrHigher*100-avgIsBOrH,2);
-            courseValue.put(e.getKey(), value);
-        }
+//        Map<String, List<Course>> courses = courseList.stream().collect(Collectors.groupingBy(Course::getCourseNumber));
+
+//        Map<String, Double> courseValue = new HashMap<>();
+//        for(Map.Entry<String, List<Course>> e: courses.entrySet()) {
+//            double avgAge = 0, avgGender = 0, avgIsBOrH = 0, value;
+//            List<Course> cList = e.getValue();
+//            for(Course course: cList) {
+//                avgAge += course.getMedianAge();
+//                avgGender += course.getPercentMale();
+//                avgIsBOrH += course.getPercentBachelorDegreeOrHigher();
+//            }
+//            avgAge = avgAge/cList.size();
+//            avgGender = avgGender/cList.size();
+//            avgIsBOrH = avgIsBOrH/cList.size();
+//            value = Math.pow(age-avgAge,2) + Math.pow(gender*100-avgGender,2) + Math.pow(isBachelorOrHigher*100-avgIsBOrH,2);
+//            courseValue.put(e.getKey(), value);
+//        }
         //courseValue.entrySet().stream().sorted(Map.Entry.comparingByValue()).map(Map.Entry::getValue).forEach(System.out::println);
 //        courseValue.entrySet().stream()
 //                .map(Map.Entry::getValue)
@@ -137,12 +146,19 @@ public class OnlineCoursesAnalyzer {
                 .sorted(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .toList();
-        Comparator<Course> valueCmp = Comparator.comparingInt(c -> cOrder.indexOf(c.getCourseNumber()));
-        Set<String> cnSet = new LinkedHashSet<>();
+
+//        Comparator<Course> valueCmp = Comparator.comparingInt(c -> cOrder.indexOf(c.getCourseNumber()));
+        Set<String> cnSet = new HashSet<>();
+
+//        courseList.stream()
+//                .sorted(Comparator.comparing(Course::getLaunchDate).reversed())
+//                .filter(course -> cnSet.add(course.getCourseNumber()))
+//                .forEach(course -> System.out.println(course.getCourseNumber()+" "+course.getCourseTitle()+" "+course.getLaunchDate()));
+
         return courseList.stream()
-                .sorted(valueCmp.reversed().thenComparing(Course::getLaunchDate).reversed())
+                .sorted(Comparator.comparing(Course::getLaunchDate).reversed())
                 .filter(course -> cnSet.add(course.getCourseNumber()))
-                .sorted(valueCmp.thenComparing(Course::getCourseTitle))
+                .sorted(Comparator.comparing((Course c) -> cOrder.indexOf(c.getCourseNumber())).thenComparing(Course::getCourseTitle))
                 .map(Course::getCourseTitle)
                 .distinct()
                 .limit(10)
