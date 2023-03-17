@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.util.List;
@@ -110,26 +111,27 @@ public class OnlineCoursesAnalyzer {
 
         Map<String, Double> courseValue = new HashMap<>();
         for(Map.Entry<String, List<Course>> e: courses.entrySet()) {
-            double avgAge = 0, avgGender = 0, avgIsBOrH = 0;
-            double partipant = 0, value = 0;
+            double avgAge = 0, avgGender = 0, avgIsBOrH = 0, value;
             List<Course> cList = e.getValue();
-            if(e.getValue().size() == 1) {
-                avgAge += cList.get(0).getMedianAge();
-                avgGender += cList.get(0).getPercentMale();
-                avgIsBOrH += cList.get(0).getPercentBachelorDegreeOrHigher();
-            } else {
-                for(Course course: cList) {
-                    avgAge += course.getMedianAge();
-                    avgGender += course.getPercentMale();
-                    avgIsBOrH += course.getPercentBachelorDegreeOrHigher();
-                }
-                avgAge = avgAge/cList.size();
-                avgGender = avgGender/cList.size();
-                avgIsBOrH = avgIsBOrH/cList.size();
+            for(Course course: cList) {
+                avgAge += course.getMedianAge();
+                avgGender += course.getPercentMale();
+                avgIsBOrH += course.getPercentBachelorDegreeOrHigher();
             }
+            avgAge = avgAge/cList.size();
+            avgGender = avgGender/cList.size();
+            avgIsBOrH = avgIsBOrH/cList.size();
             value = Math.pow(age-avgAge,2) + Math.pow(gender*100-avgGender,2) + Math.pow(isBachelorOrHigher*100-avgIsBOrH,2);
             courseValue.put(e.getKey(), value);
         }
+        //courseValue.entrySet().stream().sorted(Map.Entry.comparingByValue()).map(Map.Entry::getValue).forEach(System.out::println);
+//        courseValue.entrySet().stream()
+//                .map(Map.Entry::getValue)
+//                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+//                .entrySet().stream()
+//                .filter(e -> e.getValue() > 1)
+//                .map(Map.Entry::getKey)
+//                .forEach(System.out::println);
 
         List<String> cOrder = courseValue.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
@@ -138,8 +140,9 @@ public class OnlineCoursesAnalyzer {
         Comparator<Course> valueCmp = Comparator.comparingInt(c -> cOrder.indexOf(c.getCourseNumber()));
         Set<String> cnSet = new LinkedHashSet<>();
         return courseList.stream()
-                .sorted(valueCmp.reversed().thenComparing(Course::getCourseNumber).thenComparing(Course::getLaunchDate).reversed())
+                .sorted(valueCmp.reversed().thenComparing(Course::getLaunchDate).reversed())
                 .filter(course -> cnSet.add(course.getCourseNumber()))
+                .sorted(valueCmp.thenComparing(Course::getCourseTitle))
                 .map(Course::getCourseTitle)
                 .distinct()
                 .limit(10)
