@@ -128,6 +128,7 @@ public class OnlineCoursesAnalyzer {
                 .toList();
 
     }
+    
     class Course {
         private String institution;
         private String courseNumber;

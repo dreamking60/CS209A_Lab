@@ -61,6 +61,8 @@ public class OnlineCoursesAnalyzer {
 
     //4
     public List<String> getCourses(int topK, String by) {
+        Comparator<Course> comparator;
+        comparator = Comparator.comparing(course -> course.totalHours);
         return null;
     }
 
