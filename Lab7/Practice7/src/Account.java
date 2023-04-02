@@ -1,12 +1,14 @@
-
+import java.util.concurrent.locks.ReentrantLock;
 public class Account {
     private double balance;
+	private final ReentrantLock lock = new ReentrantLock();
 
     /**
      *
      * @param money
      */
-    public synchronized void deposit(double money) {
+    public void deposit(double money) {
+		lock.lock();
         try {
 			double newBalance = balance + money;
 			try {
@@ -19,6 +21,8 @@ public class Account {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			lock.unlock();
 		}
 
     }
