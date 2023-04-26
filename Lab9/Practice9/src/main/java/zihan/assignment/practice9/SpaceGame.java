@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class SpaceInvaderGame extends Application {
+public class SpaceGame extends Application {
 
     private Pane root = new Pane();
     private Label scoreLabel = new Label("Score: 0");
     private Label gameOverLabel = new Label("GAME OVER");
     private int score = 0;
     private boolean gameOver = false;
+    private boolean playerCanShoot = true;
 
     private Sprite player = new Sprite(300, 750, 40, 40, "player", Color.BLUE);
 
@@ -103,18 +104,12 @@ public class SpaceInvaderGame extends Application {
 
         // remove dead sprites from the screen
         root.getChildren().removeIf(n -> {
-            if (n instanceof Sprite) {
+            if(n instanceof Sprite) {
                 Sprite s = (Sprite) n;
                 return s.dead;
             }
             return false;
         });
-
-        // player can shoot bullet to enemies
-        if (player.canShoot) {
-            player.canShoot = false;
-            shoot(player);
-        }
     }
 
     private void increaseScore() {
@@ -130,21 +125,6 @@ public class SpaceInvaderGame extends Application {
         Sprite s = new Sprite((int) who.getTranslateX() + 20, (int) who.getTranslateY(), 5, 20, who.type + "bullet", Color.BLACK);
 
         root.getChildren().add(s);
-
-        // player's bullets should disappear when it reaches the top of the screen
-        if (who.type.equals("player")) {
-            AnimationTimer timer = new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    s.moveUp();
-                    // player's bullet hits the top of the screen
-                    if (s.getTranslateY() + s.getHeight() < 0) {
-                        s.dead = true;
-                    }
-                }
-            };
-            timer.start();
-        }
     }
 
     private void gameOver() {
@@ -177,7 +157,21 @@ public class SpaceInvaderGame extends Application {
                     player.moveDown();
                     break;
                 case SPACE:
-                    player.canShoot = true; // player can shoot bullet
+                    if (playerCanShoot) {
+                        shoot(player);
+                        playerCanShoot = false;
+                        // set a delay before the player can shoot again
+                        new java.util.Timer().schedule(
+                                new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        playerCanShoot = true;
+                                    }
+                                },
+                                500 // delay time in milliseconds
+                        );
+                        // 500 millisecond delay ensures the player can't shoot too frequently
+                    }
                     break;
             }
         });
@@ -191,7 +185,6 @@ public class SpaceInvaderGame extends Application {
         final String type;
         long lastShotTime = System.currentTimeMillis();
         int timeInterval = 5000; // 5 seconds (in milliseconds)
-        boolean canShoot = false;
 
         Sprite(int x, int y, int w, int h, String type, Color color) {
             super(w, h, color);
